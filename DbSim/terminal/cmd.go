@@ -11,18 +11,66 @@ import (
 type Terminal struct {
 }
 
+func (t Terminal) setCmd(atr []string) {
+	if len(atr) != 3 {
+		return
+	}
+
+	name, varType, valueStr := atr[0], strings.ToUpper(atr[1]), atr[2]
+
+	res := map[string]interface{}{
+		"name": name,
+	}
+	switch varType {
+	case "INT":
+		val, err := strconv.ParseInt(valueStr, 10, 32)
+		if err != nil {
+			return
+		}
+		res["type"] = "INT"
+		res["value"] = val
+
+	case "FLOAT":
+		val, err := strconv.ParseFloat(valueStr, 64)
+		if err != nil {
+			return
+		}
+		res["type"] = "FLOAT"
+		res["value"] = val
+
+	case "STRING":
+		val := valueStr
+		res["type"] = "STRING"
+		res["value"] = val
+
+	default:
+		return
+	}
+
+	fmt.Printf("По результатам команды SET получены следующие данные: %s = %v (%s)\n",
+		res["name"],
+		res["value"],
+		res["type"],
+	)
+}
+
+func (t Terminal) stringPreparator(str string) string {
+	sep, words := " ", strings.Fields(str)
+	return strings.Join(words, sep)
+}
+
 func (t Terminal) Parser(cmd string) {
-	words := strings.Fields(cmd)
+	words := strings.Fields(t.stringPreparator(cmd))
 
 	if len(words) < 2 {
 		return
 	}
 
-	token := words[0]
+	token := strings.ToUpper(words[0])
 
 	switch token {
 	case "SET":
-		fmt.Println("SET")
+		t.setCmd(words[1:])
 	case "OBJECT":
 		fmt.Println("OBJECT")
 	case "PUSH":

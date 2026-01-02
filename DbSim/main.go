@@ -10,7 +10,8 @@ var ter terminal.Terminal = terminal.Terminal{}
 
 func main() {
 
-	str := "SET a INT 1"
+	str := "SET b FLOAT 3.5"
 
 	ter.Parser(str)
+
 }
