@@ -1,6 +1,6 @@
-module hw3
+module pipeline
 
-go 1.23.3
+go 1.25.5
 
 require github.com/stretchr/testify v1.10.0
 
