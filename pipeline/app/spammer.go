@@ -7,11 +7,22 @@ import (
 )
 
 func RunPipeline(cmds ...cmd) {
+	if len(cmds) == 0 {
+		return
+	}
 	var in chan any
-	for _, command := range cmds {
+	out := make(chan any)
+	cmds[0](in, out)
+	close(out)
+	in = out
+	for i := 1; i < len(cmds); i++ {
 		out := make(chan any)
-		go command(in, out)
+		go cmds[i](in, out)
 		in = out
+	}
+	if in != nil {
+		for range in {
+		}
 	}
 }
 

@@ -10,13 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-/*
-Это тест на проверку того что у нас это действительно конвейер
-неправильное поведение: накапливать результаты выполнения одной функции, а потом слать их в следующую.
-
-Это не позволяет запускать на конвейере бесконечные задачи.
-Правильное поведение: обеспечить беспрепятственный поток.
-*/
 func TestPipeline1(t *testing.T) {
 	var (
 		ok       = true
@@ -27,10 +20,6 @@ func TestPipeline1(t *testing.T) {
 			out <- 1
 			time.Sleep(10 * time.Millisecond)
 			currRecieved := atomic.LoadUint32(&recieved)
-			// в чем тут суть
-			// если вы накапливаете значения, то пока вся функция не отрабоатет - дальше они не пойдут
-			// тут я проверяю, что счетчик увеличился в следующей функции
-			// это значит что туда дошло значение прежде чем текущая функция отработала
 			if currRecieved == 0 {
 				ok = false
 			}
@@ -50,13 +39,6 @@ func TestPipeline1(t *testing.T) {
 		"счетчик recieved в итоге не увилился, а должен был")
 }
 
-/*
-Этот тест проверяет то, что все функции действительно выполнились
-и дает представление о влиянии time.Sleep в одном из звеньев конвейера на время работы.
-
-Возможно кому-то будет легче с ним.
-При правильной реализации ваш код конечно же должен его проходить
-*/
 func TestPipeline2(t *testing.T) {
 	var recieved uint32
 	freeFlowCmds := []cmd{
@@ -92,10 +74,9 @@ func TestPipeline2(t *testing.T) {
 		"f3 have not collected inputs, recieved = %d", recieved)
 }
 
-// Ппроверяем, что SelectUsers корректно обрабатывает алиасы и не повторяет одних и тех же юзеров
 func TestAlias(t *testing.T) {
 	inputData := []string{
-		"batman@mail.ru", // is an alias for bruce.wayne@mail.ru
+		"batman@mail.ru",
 		"bruce.wayne@mail.ru",
 	}
 	expectedOutput := []string{
@@ -114,7 +95,6 @@ func TestAlias(t *testing.T) {
 		"итоговый результат отличается от ожидаемого")
 }
 
-// Проверяем, что запуски функций SelectUsers, SelectMessages в параллельных RunPipeline не влияют друг на друга
 func TestParallelPiplines(t *testing.T) {
 	inputData := []string{
 		"1000@mail.ru",
@@ -171,10 +151,10 @@ func TestTotal(t *testing.T) {
 		"d.vader@mail.ru",
 		"noname@mail.ru",
 		"e.musk@mail.ru",
-		"spiderman@mail.ru", // is an alias for peter.parker@mail.ru
+		"spiderman@mail.ru",
 		"red_prince@mail.ru",
 		"tomasangelo@mail.ru",
-		"batman@mail.ru", // is an alias for bruce.wayne@mail.ru
+		"batman@mail.ru",
 		"bruce.wayne@mail.ru",
 	}
 	expectedOutput := []string{
