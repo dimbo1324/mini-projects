@@ -1,29 +1,44 @@
 package main
 
+import (
+	"fmt"
+	"sync"
+)
+
 func RunPipeline(cmds ...cmd) {
-	// Implement me!
 }
 
-// in - string
-// out - User
 func SelectUsers(in, out chan any) {
-	// Implement me!
+	usersCh := make(chan User)
+	var wg sync.WaitGroup
+	go func() {
+		for raw := range in {
+			email := fmt.Sprintf("%v", raw)
+			wg.Add(1)
+			go func(e string) {
+				defer wg.Done()
+				user := GetUser(e)
+				usersCh <- user
+			}(email)
+		}
+		wg.Wait()
+		close(usersCh)
+	}()
+	seen := make(map[uint64]struct{})
+	for u := range usersCh {
+		if _, ok := seen[u.ID]; !ok {
+			seen[u.ID] = struct{}{}
+			out <- u
+		}
+	}
+	close(out)
 }
 
-// in - User
-// out - MsgID
 func SelectMessages(in, out chan any) {
-	// Implement me!
 }
 
-// in - MsgID
-// out - MsgData
 func CheckSpam(in, out chan any) {
-	// Implement me!
 }
 
-// in - MsgData
-// out - string
 func CombineResults(in, out chan any) {
-	// Implement me!
 }
