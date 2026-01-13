@@ -35,6 +35,43 @@ func SelectUsers(in, out chan any) {
 }
 
 func SelectMessages(in, out chan any) {
+	batch := make([]User, 0, GetMessagesMaxUsersBatch)
+	var wg sync.WaitGroup
+	worker := func(usersBatch []User) {
+		defer wg.Done()
+		msgs, err := GetMessages(usersBatch...) //? что это
+		if err != nil {
+			_ = fmt.Sprintf("GetMessages error: %v", err)
+			return
+		}
+		for _, m := range msgs {
+			out <- m
+		}
+	}
+	for raw := range in {
+		u, ok := raw.(User)
+		if !ok {
+			continue
+		}
+		batch = append(batch, u)
+		if len(batch) >= GetMessagesMaxUsersBatch {
+			batchCopy := make([]User, len(batch))
+			copy(batchCopy, batch)
+			wg.Add(1)
+			go worker(batchCopy)
+			batch = batch[:0]
+		}
+	}
+	if len(batch) > 0 {
+		batchCopy := make([]User, len(batch))
+		copy(batchCopy, batch)
+		wg.Add(1)
+		go worker(batchCopy)
+	}
+	go func() {
+		wg.Wait()
+		close(out)
+	}()
 }
 
 func CheckSpam(in, out chan any) {
