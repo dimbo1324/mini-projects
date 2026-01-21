@@ -18,7 +18,7 @@ func init() {
 	flag.StringVar(&flags.DirectoryPath, "d", "", "path to directory with files")
 }
 
-const postgresqlConnString = "postgres://user:password@localhost:5432/postgres"
+const postgresqlConnString = "postgres://user:password@localhost:5432/postgres?sslmode=disable"
 
 func main() {
 	flag.Parse()
